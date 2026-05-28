@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Pencil, Archive } from "lucide-react";
+import { Plus, Pencil, Archive, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatDuration } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectForm } from "@/components/project-form";
 import { PartList } from "@/components/part-list";
@@ -21,6 +22,7 @@ interface Project {
   color: string;
   status: string;
   parts: Part[];
+  totalMinutes?: number;
 }
 
 export default function ProjectsPage() {
@@ -107,8 +109,18 @@ export default function ProjectsPage() {
                       </Button>
                     </div>
                   </div>
-                  {project.client && (
-                    <p className="text-sm text-muted-foreground">{project.client}</p>
+                  {(project.client || project.totalMinutes) && (
+                    <div className="flex items-center gap-3">
+                      {project.client && (
+                        <p className="text-sm text-muted-foreground">{project.client}</p>
+                      )}
+                      {project.totalMinutes != null && project.totalMinutes > 0 && (
+                        <span className="text-xs flex items-center gap-1 text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {formatDuration(project.totalMinutes)} total
+                        </span>
+                      )}
+                    </div>
                   )}
                 </CardHeader>
                 <CardContent>

@@ -62,6 +62,34 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, startTime, endTime, description } = body;
+
+    if (!id || !startTime || !endTime) {
+      return NextResponse.json({ error: "id, startTime, endTime required" }, { status: 400 });
+    }
+
+    const [startH, startM] = startTime.split(":").map(Number);
+    const [endH, endM] = endTime.split(":").map(Number);
+    const duration = (endH * 60 + endM) - (startH * 60 + startM);
+
+    if (duration <= 0) {
+      return NextResponse.json({ error: "Invalid time range" }, { status: 400 });
+    }
+
+    const entry = await prisma.timeEntry.update({
+      where: { id },
+      data: { startTime, endTime, duration, description: description || null },
+      include: { project: true, part: true },
+    });
+    return NextResponse.json(entry);
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

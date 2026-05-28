@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { TimerWidget } from "@/components/timer-widget";
 import { TimeEntryForm } from "@/components/time-entry-form";
 import { TimeEntryList } from "@/components/time-entry-list";
+import { calculateDuration } from "@/lib/utils";
 
 interface Part {
   id: string;
@@ -60,6 +61,35 @@ export default function TimerPage() {
     fetchEntries();
   }
 
+  async function handleDuplicate(entry: TimeEntry) {
+    await fetch("/api/time-entries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: selectedDate,
+        startTime: entry.startTime,
+        endTime: entry.endTime,
+        duration: entry.duration,
+        description: entry.description,
+        projectId: entry.project.id,
+        partId: entry.part?.id || null,
+      }),
+    });
+    fetchEntries();
+  }
+
+  async function handleEdit(
+    id: string,
+    data: { startTime: string; endTime: string; description: string | null }
+  ) {
+    await fetch("/api/time-entries", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...data }),
+    });
+    fetchEntries();
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -76,7 +106,12 @@ export default function TimerPage() {
 
       <TimeEntryForm projects={projects} onEntrySaved={fetchEntries} />
 
-      <TimeEntryList entries={entries} onDelete={handleDelete} />
+      <TimeEntryList
+        entries={entries}
+        onDelete={handleDelete}
+        onDuplicate={handleDuplicate}
+        onEdit={handleEdit}
+      />
     </div>
   );
 }

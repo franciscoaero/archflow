@@ -18,10 +18,20 @@ export async function GET(request: NextRequest) {
 
     const projects = await prisma.project.findMany({
       where: includeAll ? {} : { status: { not: "archived" } },
-      include: { parts: true },
+      include: {
+        parts: true,
+        entries: { select: { duration: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json(projects);
+
+    const result = projects.map((p) => ({
+      ...p,
+      totalMinutes: p.entries.reduce((acc, e) => acc + e.duration, 0),
+      entries: undefined,
+    }));
+
+    return NextResponse.json(result);
   } catch (error) {
     return errorResponse(error);
   }
