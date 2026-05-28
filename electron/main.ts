@@ -2,7 +2,7 @@ import { app, BrowserWindow } from "electron";
 import { spawn, ChildProcess, execSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import { existsSync } from "fs";
+import { existsSync, copyFileSync, mkdirSync } from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = !app.isPackaged;
@@ -11,23 +11,62 @@ const PORT = isDev ? 3000 : 3099;
 let mainWindow: BrowserWindow | null = null;
 let serverProcess: ChildProcess | null = null;
 
+function getDbPath(): string {
+  if (isDev) {
+    return path.join(process.cwd(), "prisma", "dev.db");
+  }
+  const userDataPath = app.getPath("userData");
+  return path.join(userDataPath, "archflow.db");
+}
+
+function getDatabaseUrl(): string {
+  return `file:${getDbPath()}`;
+}
+
+function ensureDatabase(): void {
+  const dbPath = getDbPath();
+  if (existsSync(dbPath)) return;
+
+  const dir = path.dirname(dbPath);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+
+  const appPath = getAppPath();
+  const schemaPath = path.join(appPath, "prisma", "schema.prisma");
+
+  try {
+    execSync(
+      `${process.execPath} ${path.join(appPath, "node_modules", "prisma", "build", "index.js")} db push --skip-generate --schema="${schemaPath}"`,
+      {
+        env: {
+          ...process.env,
+          DATABASE_URL: getDatabaseUrl(),
+          ELECTRON_RUN_AS_NODE: "1",
+        },
+        cwd: appPath,
+        stdio: "pipe",
+      }
+    );
+  } catch (err) {
+    console.error("Failed to initialize database:", err);
+  }
+}
+
 function getNextBin(): string {
   if (isDev) {
-    return path.join(process.cwd(), "node_modules", ".bin", "next");
+    return path.join(process.cwd(), "node_modules", "next", "dist", "bin", "next");
   }
 
+  const appPath = getAppPath();
   const candidates = [
-    path.join(process.resourcesPath, "app", "node_modules", "next", "dist", "bin", "next"),
-    path.join(process.resourcesPath, "app", "node_modules", ".bin", "next"),
-    path.join(app.getAppPath(), "node_modules", "next", "dist", "bin", "next"),
-    path.join(app.getAppPath(), "node_modules", ".bin", "next"),
+    path.join(appPath, "node_modules", "next", "dist", "bin", "next"),
+    path.join(appPath, "node_modules", ".bin", "next"),
   ];
 
   for (const candidate of candidates) {
     if (existsSync(candidate)) return candidate;
   }
 
-  return "next";
+  return path.join(appPath, "node_modules", "next", "dist", "bin", "next");
 }
 
 function getAppPath(): string {
@@ -57,7 +96,7 @@ function createWindow() {
 }
 
 function startServer(): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (isDev) {
       resolve();
       return;
@@ -72,6 +111,7 @@ function startServer(): Promise<void> {
         ...process.env,
         NODE_ENV: "production",
         ELECTRON_RUN_AS_NODE: "1",
+        DATABASE_URL: getDatabaseUrl(),
       },
       stdio: "pipe",
     });
@@ -98,6 +138,10 @@ function startServer(): Promise<void> {
 }
 
 app.whenReady().then(async () => {
+  if (!isDev) {
+    ensureDatabase();
+  }
+
   if (isDev) {
     createWindow();
   } else {
