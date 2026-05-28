@@ -2,6 +2,8 @@
   "name": "archflow",
   "version": "0.1.0",
   "private": true,
+  "author": "Francisco Marcelino",
+  "description": "Time tracking app for architecture professionals",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "next dev",

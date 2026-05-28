@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -17,11 +18,14 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
 
       - name: Build Next.js
         run: npm run build
@@ -42,7 +46,6 @@ jobs:
             dist/*.dmg
             dist/*.zip
             dist/*.exe
-            dist/*.AppImage
 
   release:
     needs: build
@@ -56,12 +59,14 @@ jobs:
         with:
           name: dist-macos-latest
           path: dist
+        continue-on-error: true
 
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist-windows-latest
           path: dist
+        continue-on-error: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

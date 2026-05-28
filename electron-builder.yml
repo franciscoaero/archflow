@@ -8,17 +8,8 @@ files:
   - .next/**/*
   - node_modules/**/*
   - package.json
-  - prisma/**/*
-  - public/**/*
-extraResources:
-  - from: .next
-    to: app/.next
-  - from: node_modules
-    to: app/node_modules
-  - from: package.json
-    to: app/package.json
-  - from: prisma
-    to: app/prisma
+  - prisma/schema.prisma
+asar: true
 mac:
   category: public.app-category.productivity
   target:
@@ -27,7 +18,6 @@ mac:
 win:
   target:
     - nsis
-    - portable
-linux:
-  target:
-    - AppImage
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
