@@ -28,6 +28,7 @@ model Project {
   profile   Profile     @relation(fields: [profileId], references: [id])
   parts     Part[]
   entries   TimeEntry[]
+  tasks     Task[]
   createdAt DateTime    @default(now())
 }
 
@@ -54,6 +55,15 @@ model TimeEntry {
   invoiceId   String?
   invoice     Invoice? @relation(fields: [invoiceId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  text      String
+  done      Boolean  @default(false)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Invoice {

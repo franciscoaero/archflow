@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Timer,
+  Calendar,
   FolderKanban,
+  ListTodo,
   FileBarChart,
   Receipt,
   User,
@@ -16,7 +18,9 @@ import { ProfileSelector } from "@/components/profile-selector";
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Timer", href: "/timer", icon: Timer },
+  { name: "Calendário", href: "/calendar", icon: Calendar },
   { name: "Projetos", href: "/projects", icon: FolderKanban },
+  { name: "Tarefas", href: "/tasks", icon: ListTodo },
   { name: "Relatórios", href: "/reports", icon: FileBarChart },
   { name: "Invoices", href: "/invoices", icon: Receipt },
   { name: "Perfil", href: "/profile", icon: User },
