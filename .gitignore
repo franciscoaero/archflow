@@ -42,6 +42,7 @@ prisma/dev.db-journal
 
 # claude code
 .claude/
+CLAUDE.md
 
 # private docs (contains personal data)
 docs/SPEC.md
