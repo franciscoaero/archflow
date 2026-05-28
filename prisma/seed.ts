@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma";
 import { startOfWeek, addDays, format } from "date-fns";
 
 const prisma = new PrismaClient();
@@ -73,7 +73,7 @@ async function main() {
 
   for (const entry of entries) {
     const date = addDays(weekStart, entry.day);
-    const part = entry.project.parts.find((p) => p.name === entry.part);
+    const part = entry.project.parts.find((p: { name: string }) => p.name === entry.part);
     const [startH, startM] = entry.start.split(":").map(Number);
     const [endH, endM] = entry.end.split(":").map(Number);
     const duration = (endH * 60 + endM) - (startH * 60 + startM);
