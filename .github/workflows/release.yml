@@ -12,6 +12,8 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      DATABASE_URL: "file:./prisma/dev.db"
 
     steps:
       - uses: actions/checkout@v4
@@ -26,13 +28,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: "file:./prisma/dev.db"
 
       - name: Build Next.js
         run: npm run build
-        env:
-          DATABASE_URL: "file:./prisma/dev.db"
 
       - name: Compile Electron
         run: npm run electron:compile
