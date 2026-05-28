@@ -42,10 +42,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const data = createProjectSchema.parse(body);
 
-    const profile = data.profileId || (await prisma.profile.findFirst())?.id;
+    let profile = data.profileId || (await prisma.profile.findFirst())?.id;
 
     if (!profile) {
-      return NextResponse.json({ error: "No profile found" }, { status: 400 });
+      const newProfile = await prisma.profile.create({
+        data: { name: "My Profile", currency: "USD" },
+      });
+      profile = newProfile.id;
     }
 
     const project = await prisma.project.create({

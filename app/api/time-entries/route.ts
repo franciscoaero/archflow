@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     const where = date
       ? {
           date: {
-            gte: new Date(`${date}T00:00:00`),
-            lt: new Date(`${date}T23:59:59`),
+            gte: new Date(`${date}T00:00:00.000Z`),
+            lt: new Date(`${date}T23:59:59.999Z`),
           },
         }
       : {};
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     const entry = await prisma.timeEntry.create({
       data: {
-        date: new Date(data.date),
+        date: new Date(`${data.date}T00:00:00.000Z`),
         startTime: data.startTime,
         endTime: data.endTime,
         duration: data.duration,

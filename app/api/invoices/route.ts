@@ -29,9 +29,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const data = createInvoiceSchema.parse(body);
 
-    const profile = await prisma.profile.findFirst();
+    let profile = await prisma.profile.findFirst();
     if (!profile) {
-      return NextResponse.json({ error: "No profile found" }, { status: 400 });
+      profile = await prisma.profile.create({
+        data: { name: "My Profile", currency: "USD" },
+      });
     }
 
     const entries = await prisma.timeEntry.findMany({
