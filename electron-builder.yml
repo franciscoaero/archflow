@@ -1,0 +1,33 @@
+appId: com.archflow.app
+productName: ArchFlow
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - dist-electron/**/*
+  - .next/**/*
+  - node_modules/**/*
+  - package.json
+  - prisma/**/*
+  - public/**/*
+extraResources:
+  - from: .next
+    to: app/.next
+  - from: node_modules
+    to: app/node_modules
+  - from: package.json
+    to: app/package.json
+  - from: prisma
+    to: app/prisma
+mac:
+  category: public.app-category.productivity
+  target:
+    - dmg
+    - zip
+win:
+  target:
+    - nsis
+    - portable
+linux:
+  target:
+    - AppImage

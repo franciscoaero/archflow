@@ -1,0 +1,55 @@
+import { prisma } from "@/lib/prisma";
+import { errorResponse } from "@/lib/api-utils";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const createProjectSchema = z.object({
+  name: z.string().min(1).max(200),
+  code: z.string().max(50).nullable().optional(),
+  client: z.string().max(200).nullable().optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  profileId: z.string().optional(),
+});
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const includeAll = searchParams.get("all") === "true";
+
+    const projects = await prisma.project.findMany({
+      where: includeAll ? {} : { status: { not: "archived" } },
+      include: { parts: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(projects);
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const data = createProjectSchema.parse(body);
+
+    const profile = data.profileId || (await prisma.profile.findFirst())?.id;
+
+    if (!profile) {
+      return NextResponse.json({ error: "No profile found" }, { status: 400 });
+    }
+
+    const project = await prisma.project.create({
+      data: {
+        name: data.name,
+        code: data.code || null,
+        client: data.client || null,
+        color: data.color || "#3B82F6",
+        profileId: profile,
+      },
+      include: { parts: true },
+    });
+    return NextResponse.json(project, { status: 201 });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
