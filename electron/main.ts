@@ -1,8 +1,9 @@
 import { app, BrowserWindow } from "electron";
-import { spawn, ChildProcess, execSync } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import { existsSync, copyFileSync, mkdirSync } from "fs";
+import { existsSync, writeFileSync, mkdirSync } from "fs";
+import http from "http";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = !app.isPackaged;
@@ -23,55 +24,42 @@ function getDatabaseUrl(): string {
   return `file:${getDbPath()}`;
 }
 
-function ensureDatabase(): void {
+function ensureDbFile(): void {
   const dbPath = getDbPath();
-  if (existsSync(dbPath)) return;
-
   const dir = path.dirname(dbPath);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-
-  const appPath = getAppPath();
-  const schemaPath = path.join(appPath, "prisma", "schema.prisma");
-
-  try {
-    execSync(
-      `${process.execPath} ${path.join(appPath, "node_modules", "prisma", "build", "index.js")} db push --skip-generate --schema="${schemaPath}"`,
-      {
-        env: {
-          ...process.env,
-          DATABASE_URL: getDatabaseUrl(),
-          ELECTRON_RUN_AS_NODE: "1",
-        },
-        cwd: appPath,
-        stdio: "pipe",
-      }
-    );
-  } catch (err) {
-    console.error("Failed to initialize database:", err);
-  }
+  if (!existsSync(dbPath)) writeFileSync(dbPath, "");
 }
 
 function getNextBin(): string {
-  if (isDev) {
-    return path.join(process.cwd(), "node_modules", "next", "dist", "bin", "next");
-  }
-
   const appPath = getAppPath();
   const candidates = [
     path.join(appPath, "node_modules", "next", "dist", "bin", "next"),
     path.join(appPath, "node_modules", ".bin", "next"),
   ];
-
   for (const candidate of candidates) {
     if (existsSync(candidate)) return candidate;
   }
-
-  return path.join(appPath, "node_modules", "next", "dist", "bin", "next");
+  return candidates[0];
 }
 
 function getAppPath(): string {
   if (isDev) return process.cwd();
   return app.getAppPath();
+}
+
+function callInitApi(): Promise<void> {
+  return new Promise((resolve) => {
+    const req = http.request(
+      { hostname: "localhost", port: PORT, path: "/api/init", method: "POST" },
+      (res) => {
+        res.resume();
+        resolve();
+      }
+    );
+    req.on("error", () => resolve());
+    req.end();
+  });
 }
 
 function createWindow() {
@@ -118,14 +106,16 @@ function startServer(): Promise<void> {
 
     serverProcess.stdout?.on("data", (data: Buffer) => {
       const output = data.toString();
-      console.log("Server:", output);
       if (output.includes("Ready") || output.includes("started") || output.includes(`:${PORT}`)) {
         resolve();
       }
     });
 
     serverProcess.stderr?.on("data", (data: Buffer) => {
-      console.error("Server stderr:", data.toString());
+      const msg = data.toString();
+      if (!msg.includes("ExperimentalWarning")) {
+        console.error("Server:", msg);
+      }
     });
 
     serverProcess.on("error", (err) => {
@@ -133,21 +123,18 @@ function startServer(): Promise<void> {
       resolve();
     });
 
-    setTimeout(resolve, 8000);
+    setTimeout(resolve, 10000);
   });
 }
 
 app.whenReady().then(async () => {
   if (!isDev) {
-    ensureDatabase();
+    ensureDbFile();
+    await startServer();
+    await callInitApi();
   }
 
-  if (isDev) {
-    createWindow();
-  } else {
-    await startServer();
-    createWindow();
-  }
+  createWindow();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

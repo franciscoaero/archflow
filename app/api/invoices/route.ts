@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { getProfileId } from "@/lib/get-profile";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -9,9 +10,11 @@ const createInvoiceSchema = z.object({
   entryIds: z.array(z.string().min(1)).min(1),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const profileId = await getProfileId(request);
     const invoices = await prisma.invoice.findMany({
+      where: profileId ? { profileId } : {},
       include: {
         entries: { include: { project: true, part: true } },
         profile: true,

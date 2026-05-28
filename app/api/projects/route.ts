@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { getProfileId } from "@/lib/get-profile";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -15,9 +16,14 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const includeAll = searchParams.get("all") === "true";
+    const profileId = await getProfileId(request);
+
+    const where: Record<string, unknown> = {};
+    if (!includeAll) where.status = { not: "archived" };
+    if (profileId) where.profileId = profileId;
 
     const projects = await prisma.project.findMany({
-      where: includeAll ? {} : { status: { not: "archived" } },
+      where,
       include: {
         parts: true,
         entries: { select: { duration: true } },
@@ -42,7 +48,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const data = createProjectSchema.parse(body);
 
-    let profile = data.profileId || (await prisma.profile.findFirst())?.id;
+    let profile = data.profileId || await getProfileId(request) || (await prisma.profile.findFirst())?.id;
 
     if (!profile) {
       const newProfile = await prisma.profile.create({

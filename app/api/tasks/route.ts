@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { getProfileId } from "@/lib/get-profile";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -8,9 +9,13 @@ const createTaskSchema = z.object({
   projectId: z.string().nullable().optional(),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const profileId = await getProfileId(request);
     const tasks = await prisma.task.findMany({
+      where: profileId
+        ? { OR: [{ project: { profileId } }, { projectId: null }] }
+        : {},
       include: { project: true },
       orderBy: [{ done: "asc" }, { createdAt: "desc" }],
     });

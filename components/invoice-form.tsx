@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -40,7 +42,7 @@ export function InvoiceForm({ onSave, onCancel }: InvoiceFormProps) {
 
   async function fetchEntries() {
     setLoading(true);
-    const res = await fetch(`/api/reports?start=${startDate}&end=${endDate}`);
+    const res = await apiFetch(`/api/reports?start=${startDate}&end=${endDate}`);
     const data = await res.json();
     setEntries(data.entries || []);
     const unbilled = (data.entries || []).filter((e: TimeEntry & { invoiceId?: string }) => !e.invoiceId);
@@ -52,7 +54,7 @@ export function InvoiceForm({ onSave, onCancel }: InvoiceFormProps) {
     if (selectedIds.size === 0) return;
     setSaving(true);
 
-    await fetch("/api/invoices", {
+    await apiFetch("/api/invoices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

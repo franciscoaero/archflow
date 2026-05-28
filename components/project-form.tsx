@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -37,13 +39,13 @@ export function ProjectForm({ project, onSave, onCancel }: ProjectFormProps) {
     setSaving(true);
 
     if (project) {
-      await fetch(`/api/projects/${project.id}`, {
+      await apiFetch(`/api/projects/${project.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, code, client, color, status }),
       });
     } else {
-      await fetch("/api/projects", {
+      await apiFetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, code, client, color }),

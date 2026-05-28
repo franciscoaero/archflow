@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,7 +45,7 @@ export default function CalendarPage() {
     for (let i = 0; i < 7; i++) {
       const day = addDays(ws, i);
       const dateStr = format(day, "yyyy-MM-dd");
-      const res = await fetch(`/api/time-entries?date=${dateStr}`);
+      const res = await apiFetch(`/api/time-entries?date=${dateStr}`);
       const entries: TimeEntry[] = await res.json();
       const dayTotal = entries.reduce((acc, e) => acc + e.duration, 0);
       total += dayTotal;

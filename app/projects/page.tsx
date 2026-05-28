@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Archive, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,7 +33,7 @@ export default function ProjectsPage() {
   const [editingProject, setEditingProject] = useState<Project | undefined>();
 
   const fetchProjects = useCallback(async () => {
-    const res = await fetch("/api/projects?all=true");
+    const res = await apiFetch("/api/projects?all=true");
     const data = await res.json();
     setProjects(data);
   }, []);
@@ -46,7 +48,7 @@ export default function ProjectsPage() {
   }
 
   async function handleArchive(id: string) {
-    await fetch(`/api/projects/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/projects/${id}`, { method: "DELETE" });
     fetchProjects();
   }
 

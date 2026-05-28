@@ -6,11 +6,13 @@ directories:
 files:
   - dist-electron/**/*
   - .next/**/*
+  - generated/**/*
   - node_modules/**/*
+  - "!node_modules/prisma"
+  - "!node_modules/typescript"
   - package.json
   - prisma/schema.prisma
   - next.config.mjs
-  - .env.production
 asar: false
 mac:
   category: public.app-category.productivity

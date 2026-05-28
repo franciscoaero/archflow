@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { getProfileId } from "@/lib/get-profile";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -18,14 +19,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get("date");
 
-    const where = date
-      ? {
-          date: {
-            gte: new Date(`${date}T00:00:00.000Z`),
-            lt: new Date(`${date}T23:59:59.999Z`),
-          },
-        }
-      : {};
+    const profileId = await getProfileId(request);
+    const where: Record<string, unknown> = {};
+    if (date) {
+      where.date = {
+        gte: new Date(`${date}T00:00:00.000Z`),
+        lt: new Date(`${date}T23:59:59.999Z`),
+      };
+    }
+    if (profileId) {
+      where.project = { profileId };
+    }
 
     const entries = await prisma.timeEntry.findMany({
       where,

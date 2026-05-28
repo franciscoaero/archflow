@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useCallback } from "react";
 import { FileDown, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,7 +47,7 @@ export default function ReportsPage() {
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/reports?start=${startDate}&end=${endDate}`);
+    const res = await apiFetch(`/api/reports?start=${startDate}&end=${endDate}`);
     const json = await res.json();
     setData(json);
     setLoading(false);

@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,12 +28,12 @@ export default function TasksPage() {
   const [newProjectId, setNewProjectId] = useState("");
 
   const fetchTasks = useCallback(async () => {
-    const res = await fetch("/api/tasks");
+    const res = await apiFetch("/api/tasks");
     setTasks(await res.json());
   }, []);
 
   const fetchProjects = useCallback(async () => {
-    const res = await fetch("/api/projects");
+    const res = await apiFetch("/api/projects");
     setProjects(await res.json());
   }, []);
 
@@ -44,7 +46,7 @@ export default function TasksPage() {
     e.preventDefault();
     if (!newText.trim()) return;
 
-    await fetch("/api/tasks", {
+    await apiFetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -58,7 +60,7 @@ export default function TasksPage() {
   }
 
   async function toggleDone(id: string, done: boolean) {
-    await fetch("/api/tasks", {
+    await apiFetch("/api/tasks", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, done: !done }),
@@ -67,7 +69,7 @@ export default function TasksPage() {
   }
 
   async function handleDelete(id: string) {
-    await fetch(`/api/tasks?id=${id}`, { method: "DELETE" });
+    await apiFetch(`/api/tasks?id=${id}`, { method: "DELETE" });
     fetchTasks();
   }
 

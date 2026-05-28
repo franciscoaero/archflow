@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,7 +33,7 @@ export function PartList({ projectId, parts, onUpdate }: PartListProps) {
     if (!newName.trim()) return;
 
     setAdding(true);
-    await fetch(`/api/projects/${projectId}/parts`, {
+    await apiFetch(`/api/projects/${projectId}/parts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -47,7 +49,7 @@ export function PartList({ projectId, parts, onUpdate }: PartListProps) {
   }
 
   async function handleDelete(partId: string) {
-    await fetch(`/api/projects/${projectId}/parts?partId=${partId}`, {
+    await apiFetch(`/api/projects/${projectId}/parts?partId=${partId}`, {
       method: "DELETE",
     });
     onUpdate();
@@ -60,7 +62,7 @@ export function PartList({ projectId, parts, onUpdate }: PartListProps) {
     );
 
     for (const name of toAdd) {
-      await fetch(`/api/projects/${projectId}/parts`, {
+      await apiFetch(`/api/projects/${projectId}/parts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),

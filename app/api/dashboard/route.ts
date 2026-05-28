@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getProfileId } from "@/lib/get-profile";
 import { NextRequest, NextResponse } from "next/server";
 import { startOfWeek, endOfWeek, subWeeks, eachDayOfInterval, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -7,19 +8,22 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
   const referenceDate = dateParam ? new Date(dateParam) : new Date();
+  const profileId = await getProfileId(request);
 
   const weekStart = startOfWeek(referenceDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 1 });
   const prevWeekStart = subWeeks(weekStart, 1);
   const prevWeekEnd = subWeeks(weekEnd, 1);
 
+  const profileFilter = profileId ? { project: { profileId } } : {};
+
   const [entries, prevEntries] = await Promise.all([
     prisma.timeEntry.findMany({
-      where: { date: { gte: weekStart, lte: weekEnd } },
+      where: { date: { gte: weekStart, lte: weekEnd }, ...profileFilter },
       include: { project: true, part: true },
     }),
     prisma.timeEntry.findMany({
-      where: { date: { gte: prevWeekStart, lte: prevWeekEnd } },
+      where: { date: { gte: prevWeekStart, lte: prevWeekEnd }, ...profileFilter },
     }),
   ]);
 

@@ -39,6 +39,10 @@ next-env.d.ts
 # prisma
 prisma/dev.db
 prisma/dev.db-journal
+prisma/prisma/
+
+# generated prisma client (regenerated on install)
+generated/
 
 # claude code
 .claude/

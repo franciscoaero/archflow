@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useEffect, useCallback } from "react";
 import { TimerWidget } from "@/components/timer-widget";
 import { TimeEntryForm } from "@/components/time-entry-form";
@@ -37,13 +39,13 @@ export default function TimerPage() {
   );
 
   const fetchProjects = useCallback(async () => {
-    const res = await fetch("/api/projects");
+    const res = await apiFetch("/api/projects");
     const data = await res.json();
     setProjects(data);
   }, []);
 
   const fetchEntries = useCallback(async () => {
-    const res = await fetch(`/api/time-entries?date=${selectedDate}`);
+    const res = await apiFetch(`/api/time-entries?date=${selectedDate}`);
     const data = await res.json();
     setEntries(data);
   }, [selectedDate]);
@@ -57,12 +59,12 @@ export default function TimerPage() {
   }, [fetchEntries]);
 
   async function handleDelete(id: string) {
-    await fetch(`/api/time-entries?id=${id}`, { method: "DELETE" });
+    await apiFetch(`/api/time-entries?id=${id}`, { method: "DELETE" });
     fetchEntries();
   }
 
   async function handleDuplicate(entry: TimeEntry) {
-    await fetch("/api/time-entries", {
+    await apiFetch("/api/time-entries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -82,7 +84,7 @@ export default function TimerPage() {
     id: string,
     data: { startTime: string; endTime: string; description: string | null }
   ) {
-    await fetch("/api/time-entries", {
+    await apiFetch("/api/time-entries", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, ...data }),

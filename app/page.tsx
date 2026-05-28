@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +43,7 @@ export default function DashboardPage() {
   const fetchDashboard = useCallback(async () => {
     const date = new Date();
     date.setDate(date.getDate() + weekOffset * 7);
-    const res = await fetch(`/api/dashboard?date=${date.toISOString()}`);
+    const res = await apiFetch(`/api/dashboard?date=${date.toISOString()}`);
     const json = await res.json();
     setData(json);
   }, [weekOffset]);

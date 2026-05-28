@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useEffect, useCallback } from "react";
 import { Play, Square, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -86,7 +88,7 @@ export function TimerWidget({ projects, onEntrySaved }: TimerWidgetProps) {
       return;
     }
 
-    await fetch("/api/time-entries", {
+    await apiFetch("/api/time-entries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

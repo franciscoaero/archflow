@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,7 +38,7 @@ export function TimeEntryForm({ projects, onEntrySaved }: TimeEntryFormProps) {
     if (duration <= 0) return;
 
     setSaving(true);
-    await fetch("/api/time-entries", {
+    await apiFetch("/api/time-entries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

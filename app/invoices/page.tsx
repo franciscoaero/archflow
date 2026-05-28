@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
+
 import { useState, useEffect, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,7 +50,7 @@ export default function InvoicesPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   const fetchInvoices = useCallback(async () => {
-    const res = await fetch("/api/invoices");
+    const res = await apiFetch("/api/invoices");
     const data = await res.json();
     setInvoices(data);
   }, []);
@@ -58,7 +60,7 @@ export default function InvoicesPage() {
   }, [fetchInvoices]);
 
   async function handleStatusChange(id: string, status: string) {
-    await fetch(`/api/invoices/${id}`, {
+    await apiFetch(`/api/invoices/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
